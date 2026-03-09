@@ -326,10 +326,15 @@ async function go() {
   setLock(true);
 
   try {
-    const res = await fetch(WEBHOOK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ soru: txt, pages: pdfPages })
+    const webhookUrl = "https://n8n-production-4d2d.up.railway.app/webhook/pdf-soru-cevap";
+
+fetch(webhookUrl, {
+  method: "POST",
+  body: JSON.stringify({
+    pages: base64Pages, // PDF sayfaları
+    soru: kullaniciSorusu
+  }),
+  headers: { "Content-Type": "application/json" }
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const d = await res.json();
