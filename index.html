@@ -326,25 +326,29 @@ async function go() {
   setLock(true);
 
   try {
-    const webhookUrl = "https://aenpc2013.github.io/pdf-asistan/";
+    const webhookUrl = "https://n8n-production-4d2d.up.railway.app/webhook/pdf-soru-cevap";
 
-fetch(webhookUrl, {
-  method: "POST",
-  body: JSON.stringify({
-    pages: base64Pages, // PDF sayfaları
-    soru: kullaniciSorusu
+const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pages: base64Pages, // PDF sayfaları (Base64 dizisi)
+        soru: kullaniciSorusu
   }),
   headers: { "Content-Type": "application/json" }
     });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("Sunucu hatası: " + res.status);
     const d = await res.json();
     typEl.remove();
-    if (d.cevap) addMsg("bot", d.cevap);
-    else throw new Error("Boş yanıt");
+    if (d && d.cevap) {
+      addMsg("bot", d.cevap);
+    } else {
+      throw new Error("n8n'den geçerli bir 'cevap' alanı gelmedi.");
   } catch (err) {
-    typEl.remove();
-    addMsg("bot", "⚠ Bağlantı hatası.\nn8n çalışıyor mu? Webhook URL doğru mu?\n\nDetay: " + err.message);
+    if (typeof typEl !== 'undefined') typEl.remove();
+    addMsg("bot", "⚠ Bağlantı hatası.\nDetay: " + err.message);
     showToast("Bağlantı hatası");
+    console.error("Hata detayı:", err);
   }
   setLock(false);
 }
